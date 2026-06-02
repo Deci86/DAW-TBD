@@ -1,0 +1,6 @@
+@SmallChangeDAW_HostAddress = http://localhost:5164
+
+GET {{SmallChangeDAW_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
