@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36401.2 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmallChangeDAW.API", "SmallChangeDAW.API.csproj", "{2961EC8E-EA84-4F7E-88D2-DDCB5F869A08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmallChangeDAW.CORE", "..\SmallChangeDAW.CORE\SmallChangeDAW.CORE.csproj", "{908D0010-FBD4-475D-92E9-A8BC005CA868}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmallChangeDAW.CORE", "..\SmallChangeDAW.CORE\SmallChangeDAW.CORE.csproj", "{57A40CE3-D276-D86A-DAF2-7104A60839FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{2961EC8E-EA84-4F7E-88D2-DDCB5F869A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2961EC8E-EA84-4F7E-88D2-DDCB5F869A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2961EC8E-EA84-4F7E-88D2-DDCB5F869A08}.Release|Any CPU.Build.0 = Release|Any CPU
-		{908D0010-FBD4-475D-92E9-A8BC005CA868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{908D0010-FBD4-475D-92E9-A8BC005CA868}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{908D0010-FBD4-475D-92E9-A8BC005CA868}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{908D0010-FBD4-475D-92E9-A8BC005CA868}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57A40CE3-D276-D86A-DAF2-7104A60839FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57A40CE3-D276-D86A-DAF2-7104A60839FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57A40CE3-D276-D86A-DAF2-7104A60839FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57A40CE3-D276-D86A-DAF2-7104A60839FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
