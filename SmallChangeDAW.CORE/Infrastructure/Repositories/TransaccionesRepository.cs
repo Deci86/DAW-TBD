@@ -1,57 +1,59 @@
-﻿using Dapper;
+using Microsoft.EntityFrameworkCore;
 using SmallChangeDAW.CORE.Core.Interfaces;
 using SmallChangeDAW.CORE.Infrastructure.Data;
 using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
+/// <summary>
+/// Repositorio de Transacciones con Entity Framework Core
+/// Proporciona acceso seguro y parametrizado a datos de transacciones
+/// </summary>
 public class TransaccionesRepository : ITransaccionesRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
+    private readonly SmallChangeDbContext _context;
 
-    public TransaccionesRepository(DbConnectionFactory connectionFactory)
+    public TransaccionesRepository(SmallChangeDbContext context)
     {
-        _connectionFactory = connectionFactory;
+        _context = context;
     }
 
     public async Task<IEnumerable<Transaccion>> GetAllAsync()
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryAsync<Transaccion>("SELECT * FROM Transacciones");
+        return await _context.Transacciones
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<Transaccion?> GetByIdAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<Transaccion>(
-            "SELECT * FROM Transacciones WHERE id = @Id", new { Id = id });
+        return await _context.Transacciones
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.id == id);
     }
 
     public async Task<int> AddAsync(Transaccion transaccion)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"INSERT INTO Transacciones (oferta_id, cliente_comprador_id, estado) 
-            VALUES (@oferta_id, @cliente_comprador_id, @estado); 
-            SELECT CAST(SCOPE_IDENTITY() AS INT);";
-        return await connection.QuerySingleAsync<int>(sql, transaccion);
+        _context.Transacciones.Add(transaccion);
+        await _context.SaveChangesAsync();
+        return transaccion.id;
     }
 
     public async Task<bool> UpdateAsync(Transaccion transaccion)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"UPDATE Transacciones SET
-                    estado = @estado
-                WHERE id = @id";
-
-        var rowsAffected = await connection.ExecuteAsync(sql, transaccion);
+        _context.Transacciones.Update(transaccion);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = "DELETE FROM Transacciones WHERE id = @Id";
-        var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
+        var transaccion = await _context.Transacciones.FindAsync(id);
+        if (transaccion == null)
+            return false;
+
+        _context.Transacciones.Remove(transaccion);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 }
