@@ -1,60 +1,59 @@
-using Dapper;
+using Microsoft.EntityFrameworkCore;
 using SmallChangeDAW.CORE.Core.Interfaces;
 using SmallChangeDAW.CORE.Infrastructure.Data;
 using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
+/// <summary>
+/// Repositorio de Clientes con Entity Framework Core
+/// Proporciona acceso seguro y parametrizado a datos de clientes
+/// </summary>
 public class ClientesRepository : IClientesRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
+    private readonly SmallChangeDbContext _context;
 
-    public ClientesRepository(DbConnectionFactory connectionFactory)
+    public ClientesRepository(SmallChangeDbContext context)
     {
-        _connectionFactory = connectionFactory;
+        _context = context;
     }
 
     public async Task<IEnumerable<Cliente>> GetAllAsync()
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryAsync<Cliente>("SELECT * FROM Clientes");
+        return await _context.Clientes
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<Cliente?> GetByIdAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<Cliente>(
-            "SELECT * FROM Clientes WHERE id = @Id", new { Id = id });
+        return await _context.Clientes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<int> AddAsync(Cliente cliente)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"INSERT INTO Clientes (nombre, email, pass_hash, promedio_calificacion_comprador, calificacion_vendedor)
-                    VALUES (@Nombre, @Email, @PassHash, @PromedioCalificacionComprador, @CalificacionVendedor);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
-        return await connection.QuerySingleAsync<int>(sql, cliente);
+        _context.Clientes.Add(cliente);
+        await _context.SaveChangesAsync();
+        return cliente.Id;
     }
 
     public async Task<bool> UpdateAsync(Cliente cliente)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"UPDATE Clientes SET
-                        nombre = @Nombre,
-                        email = @Email,
-                        pass_hash = @PassHash,
-                        promedio_calificacion_comprador = @PromedioCalificacionComprador,
-                        calificacion_vendedor = @CalificacionVendedor
-                    WHERE id = @Id";
-        var rowsAffected = await connection.ExecuteAsync(sql, cliente);
+        _context.Clientes.Update(cliente);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = "DELETE FROM Clientes WHERE id = @Id";
-        var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
+        var cliente = await _context.Clientes.FindAsync(id);
+        if (cliente == null)
+            return false;
+
+        _context.Clientes.Remove(cliente);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 }
