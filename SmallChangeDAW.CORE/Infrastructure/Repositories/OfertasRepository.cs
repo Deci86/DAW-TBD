@@ -1,61 +1,59 @@
-using Dapper;
+using Microsoft.EntityFrameworkCore;
 using SmallChangeDAW.CORE.Core.Interfaces;
 using SmallChangeDAW.CORE.Infrastructure.Data;
 using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
+/// <summary>
+/// Repositorio de Ofertas con Entity Framework Core
+/// Proporciona acceso seguro y parametrizado a datos de ofertas
+/// </summary>
 public class OfertasRepository : IOfertasRepository
 {
-    private readonly DbConnectionFactory _connectionFactory;
+    private readonly SmallChangeDbContext _context;
 
-    public OfertasRepository(DbConnectionFactory connectionFactory)
+    public OfertasRepository(SmallChangeDbContext context)
     {
-        _connectionFactory = connectionFactory;
+        _context = context;
     }
 
     public async Task<IEnumerable<Oferta>> GetAllAsync()
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryAsync<Oferta>("SELECT * FROM Ofertas");
+        return await _context.Ofertas
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<Oferta?> GetByIdAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryFirstOrDefaultAsync<Oferta>(
-            "SELECT * FROM Ofertas WHERE id = @Id", new { Id = id });
+        return await _context.Ofertas
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.id == id);
     }
 
     public async Task<int> AddAsync(Oferta oferta)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"INSERT INTO Ofertas (cliente_id, moneda_a_enviar, moneda_a_recibir, tipo_cambio)
-                    VALUES (@ClienteId, @MonedaAEnviar, @MonedaARecibir, @TipoCambio);
-                    SELECT CAST(SCOPE_IDENTITY() AS INT);";
-        return await connection.QuerySingleAsync<int>(sql, oferta);
+        _context.Ofertas.Add(oferta);
+        await _context.SaveChangesAsync();
+        return oferta.id;
     }
 
     public async Task<bool> UpdateAsync(Oferta oferta)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = @"UPDATE Ofertas SET
-                    cliente_id = @cliente_id,
-                    moneda_a_enviar = @moneda_a_enviar,
-                    moneda_a_recibir = @moneda_a_recibir,
-                    tipo_cambio = @tipo_cambio,
-                    estado = @estado
-                WHERE id = @id";
-
-        var rowsAffected = await connection.ExecuteAsync(sql, oferta);
+        _context.Ofertas.Update(oferta);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        var sql = "DELETE FROM Ofertas WHERE id = @Id";
-        var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
+        var oferta = await _context.Ofertas.FindAsync(id);
+        if (oferta == null)
+            return false;
+
+        _context.Ofertas.Remove(oferta);
+        var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
 }
