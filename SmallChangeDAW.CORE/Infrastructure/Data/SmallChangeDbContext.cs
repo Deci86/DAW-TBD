@@ -26,32 +26,32 @@ public partial class SmallChangeDbContext : DbContext
     {
         modelBuilder.Entity<Cliente>(entity =>
         {
-            entity.HasKey(e => e.Id);
+            entity.HasKey(e => e.id);
 
-            entity.Property(e => e.Nombre)
+            entity.Property(e => e.nombre)
                 .IsRequired()
                 .HasMaxLength(255);
 
-            entity.Property(e => e.Email)
+            entity.Property(e => e.email)
                 .IsRequired()
                 .HasMaxLength(255);
 
-            entity.HasIndex(e => e.Email)
+            entity.HasIndex(e => e.email)
                 .IsUnique();
 
-            entity.Property(e => e.PassHash)
+            entity.Property(e => e.pass_hash)
                 .IsRequired()
                 .HasMaxLength(500);
 
-            entity.Property(e => e.PromedioCalificacionComprador)
+            entity.Property(e => e.promedio_calificacion_comprador)
                 .HasColumnType("decimal(3, 2)")
                 .HasDefaultValue(0m);
 
-            entity.Property(e => e.CalificacionVendedor)
+            entity.Property(e => e.calificacion_vendedor)
                 .HasColumnType("decimal(3, 2)")
                 .HasDefaultValue(0m);
 
-            entity.Property(e => e.FechaRegistro)
+            entity.Property(e => e.fecha_registro)
                 .HasColumnType("datetime")
                 .HasDefaultValueSql("GETUTCDATE()");
         });

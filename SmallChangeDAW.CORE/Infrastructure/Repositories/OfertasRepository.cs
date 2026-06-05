@@ -5,10 +5,7 @@ using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
-/// <summary>
-/// Repositorio de Ofertas con Entity Framework Core
-/// Proporciona acceso seguro y parametrizado a datos de ofertas
-/// </summary>
+
 public class OfertasRepository : IOfertasRepository
 {
     private readonly SmallChangeDbContext _context;

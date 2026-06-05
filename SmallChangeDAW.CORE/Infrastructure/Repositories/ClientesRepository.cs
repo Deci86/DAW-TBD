@@ -5,10 +5,7 @@ using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
-/// <summary>
-/// Repositorio de Clientes con Entity Framework Core
-/// Proporciona acceso seguro y parametrizado a datos de clientes
-/// </summary>
+
 public class ClientesRepository : IClientesRepository
 {
     private readonly SmallChangeDbContext _context;
@@ -29,14 +26,14 @@ public class ClientesRepository : IClientesRepository
     {
         return await _context.Clientes
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.id == id);
     }
 
     public async Task<int> AddAsync(Cliente cliente)
     {
         _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
-        return cliente.Id;
+        return cliente.id;
     }
 
     public async Task<bool> UpdateAsync(Cliente cliente)

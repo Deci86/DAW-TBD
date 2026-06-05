@@ -29,14 +29,14 @@ public class ClientesService : IClientesService
     {
         var cliente = new Cliente
         {
-            Nombre = createDto.Nombre,
-            Email = createDto.Email,
-            PassHash = createDto.PassHash,
-            PromedioCalificacionComprador = 0.00m,
-            CalificacionVendedor = 0.00m
+            nombre = createDto.Nombre,
+            email = createDto.Email,
+            pass_hash = createDto.PassHash,
+            promedio_calificacion_comprador = 0.00m,
+            calificacion_vendedor = 0.00m
         };
 
-        cliente.Id = await _clientesRepository.AddAsync(cliente);
+        cliente.id = await _clientesRepository.AddAsync(cliente);
         return MapToDTO(cliente);
     }
 
@@ -47,15 +47,15 @@ public class ClientesService : IClientesService
             return false;
 
         if (updateDto.Nombre is not null)
-            existing.Nombre = updateDto.Nombre;
+            existing.nombre = updateDto.Nombre;
         if (updateDto.Email is not null)
-            existing.Email = updateDto.Email;
+            existing.email = updateDto.Email;
         if (updateDto.PassHash is not null)
-            existing.PassHash = updateDto.PassHash;
+            existing.pass_hash = updateDto.PassHash;
         if (updateDto.PromedioCalificacionComprador is not null)
-            existing.PromedioCalificacionComprador = updateDto.PromedioCalificacionComprador.Value;
+            existing.promedio_calificacion_comprador = updateDto.PromedioCalificacionComprador.Value;
         if (updateDto.CalificacionVendedor is not null)
-            existing.CalificacionVendedor = updateDto.CalificacionVendedor.Value;
+            existing.calificacion_vendedor = updateDto.CalificacionVendedor.Value;
 
         return await _clientesRepository.UpdateAsync(existing);
     }
@@ -69,12 +69,12 @@ public class ClientesService : IClientesService
     {
         return new ClienteResponseDTO
         {
-            Id = cliente.Id,
-            Nombre = cliente.Nombre,
-            Email = cliente.Email,
-            PromedioCalificacionComprador = cliente.PromedioCalificacionComprador,
-            CalificacionVendedor = cliente.CalificacionVendedor,
-            FechaRegistro = cliente.FechaRegistro
+            Id = cliente.id,
+            Nombre = cliente.nombre,
+            Email = cliente.email,
+            PromedioCalificacionComprador = cliente.promedio_calificacion_comprador,
+            CalificacionVendedor = cliente.calificacion_vendedor,
+            FechaRegistro = cliente.fecha_registro
         };
     }
 }

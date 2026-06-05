@@ -5,10 +5,6 @@ using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Infrastructure.Repositories;
 
-/// <summary>
-/// Repositorio de Transacciones con Entity Framework Core
-/// Proporciona acceso seguro y parametrizado a datos de transacciones
-/// </summary>
 public class TransaccionesRepository : ITransaccionesRepository
 {
     private readonly SmallChangeDbContext _context;
