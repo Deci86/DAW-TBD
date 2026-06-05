@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SmallChangeDAW.CORE.Core.Interfaces;
 using SmallChangeDAW.CORE.Infrastructure.Data;
 using SmallChangeDAW.CORE.Infrastructure.Repositories;
@@ -12,12 +13,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-builder.Services.AddSingleton(sp =>
-    new DbConnectionFactory(builder.Configuration.GetConnectionString("DefaultConnection")!));
+
+// Configurar Entity Framework Core con SQL Server
+builder.Services.AddDbContext<SmallChangeDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Registrar repositorios con EF Core
 builder.Services.AddScoped<IClientesRepository, ClientesRepository>();
 builder.Services.AddScoped<IOfertasRepository, OfertasRepository>();
 builder.Services.AddScoped<ITransaccionesRepository, TransaccionesRepository>();
+
+// Registrar servicios
 builder.Services.AddScoped<IClientesService, ClientesService>();
 builder.Services.AddScoped<IDivisasService, DivisasService>();
 builder.Services.AddScoped<IOfertasService, OfertasService>();
