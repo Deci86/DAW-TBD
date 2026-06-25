@@ -8,5 +8,6 @@ public interface IClientesRepository
     Task<Cliente?> GetByIdAsync(int id);
     Task<int> AddAsync(Cliente cliente);
     Task<bool> UpdateAsync(Cliente cliente);
-    Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteAsync(int id); 
+    Task<Cliente?> GetByEmailAsync(string email);
 }

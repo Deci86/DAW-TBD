@@ -53,4 +53,9 @@ public class ClientesRepository : IClientesRepository
         var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
+    public async Task<Cliente?> GetByEmailAsync(string email)
+    {
+        // Busca el primer cliente que coincida con el email, o devuelve null si no existe
+        return await _context.Clientes.FirstOrDefaultAsync(c => c.email == email);
+    }
 }

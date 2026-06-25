@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SmallChangeDAW.CORE.Core.DTOs;
 using SmallChangeDAW.CORE.Core.Interfaces;
+using System.Security.Claims;
 
 namespace SmallChangeDAW.Controllers;
 
@@ -16,6 +18,7 @@ public class TransaccionesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize] // Protegido para que solo usuarios logueados vean el historial
     public async Task<IActionResult> GetAll()
     {
         var transacciones = await _transaccionesService.GetAllAsync();
@@ -23,6 +26,7 @@ public class TransaccionesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetById(int id)
     {
         var transaccion = await _transaccionesService.GetByIdAsync(id);
@@ -32,11 +36,22 @@ public class TransaccionesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize] // Solo usuarios con token pueden crear transacciones
     public async Task<IActionResult> Create([FromBody] CreateTransaccionDTO createDto)
     {
         try
         {
+            // 1. Extraemos el ID del usuario del token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null) return Unauthorized();
+
+            // 2. Inyectamos forzosamente el ID del comprador desde el token
+            // Asumiendo que tu DTO tiene una propiedad 'cliente_comprador_id'
+            createDto.ClienteCompradorId = int.Parse(userIdClaim);
+
             var transaccion = await _transaccionesService.AddAsync(createDto);
+
+            // Ajusta 'id' o 'Id' según la convención de tu modelo
             return CreatedAtAction(nameof(GetById), new { id = transaccion.Id }, transaccion);
         }
         catch (KeyNotFoundException ex)
@@ -46,6 +61,7 @@ public class TransaccionesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTransaccionDTO updateDto)
     {
         try
@@ -62,6 +78,7 @@ public class TransaccionesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _transaccionesService.DeleteAsync(id);

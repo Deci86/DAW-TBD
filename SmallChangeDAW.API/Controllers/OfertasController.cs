@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization; // Necesario para [Authorize]
 using Microsoft.AspNetCore.Mvc;
 using SmallChangeDAW.CORE.Core.DTOs;
 using SmallChangeDAW.CORE.Core.Interfaces;
+using System.Security.Claims; // Necesario para extraer los datos del Token
 
 namespace SmallChangeDAW.Controllers;
 
@@ -15,6 +17,7 @@ public class OfertasController : ControllerBase
         _ofertasService = ofertasService;
     }
 
+    // GET: Público (cualquiera puede ver las ofertas disponibles)
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -22,6 +25,7 @@ public class OfertasController : ControllerBase
         return Ok(ofertas);
     }
 
+    // GET por ID: Público
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -31,12 +35,24 @@ public class OfertasController : ControllerBase
         return Ok(oferta);
     }
 
+    // POST: Requiere sesión iniciada
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateOfertaDTO createDto)
     {
         try
         {
+            // Extraemos el ID del usuario directamente del token (es más seguro que confiar en el Frontend)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userIdClaim == null) return Unauthorized();
+
+            // Opcional pero recomendado: Asignar el cliente_id directamente al DTO
+            // createDto.cliente_id = int.Parse(userIdClaim); // (Descomenta y usa el nombre exacto de tu propiedad)
+
             var oferta = await _ofertasService.AddAsync(createDto);
+
+            // Nota: Ajusta 'oferta.id' u 'oferta.Id' según cómo tengas nombrada la propieda|d en tu DTO de respuesta
             return CreatedAtAction(nameof(GetById), new { id = oferta.Id }, oferta);
         }
         catch (KeyNotFoundException ex)
@@ -45,14 +61,29 @@ public class OfertasController : ControllerBase
         }
     }
 
+    // PUT: Requiere sesión y ser el creador de la oferta
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateOfertaDTO updateDto)
     {
         try
         {
-            var updated = await _ofertasService.UpdateAsync(id, updateDto);
-            if (!updated)
+            // 1. Obtener la oferta original para verificar a quién le pertenece
+            var ofertaOriginal = await _ofertasService.GetByIdAsync(id);
+            if (ofertaOriginal == null)
                 return NotFound(new { mensaje = $"Oferta con ID {id} no encontrada." });
+
+            // 2. Extraer el ID del usuario que está haciendo la petición
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // 3. Validar que el usuario logueado sea el dueño de la oferta
+            // IMPORTANTE: Cambia 'cliente_id' por 'ClienteId' si en tu DTO usaste PascalCase
+            if (ofertaOriginal.ClienteId.ToString() != userIdClaim)
+            {
+                return Forbid(); // Retorna código 403: No tienes permisos para alterar algo que no es tuyo
+            }
+
+            var updated = await _ofertasService.UpdateAsync(id, updateDto);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
@@ -61,12 +92,26 @@ public class OfertasController : ControllerBase
         }
     }
 
+    // DELETE: Requiere sesión y ser el creador de la oferta
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        var deleted = await _ofertasService.DeleteAsync(id);
-        if (!deleted)
+        // 1. Obtener la oferta original
+        var ofertaOriginal = await _ofertasService.GetByIdAsync(id);
+        if (ofertaOriginal == null)
             return NotFound(new { mensaje = $"Oferta con ID {id} no encontrada." });
+
+        // 2. Extraer el ID del token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // 3. Validar propiedad
+        if (ofertaOriginal.ClienteId.ToString() != userIdClaim)
+        {
+            return Forbid();
+        }
+
+        var deleted = await _ofertasService.DeleteAsync(id);
         return NoContent();
     }
 }
