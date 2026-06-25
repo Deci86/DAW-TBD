@@ -47,12 +47,9 @@ public class OfertasController : ControllerBase
 
             if (userIdClaim == null) return Unauthorized();
 
-            // Opcional pero recomendado: Asignar el cliente_id directamente al DTO
-            // createDto.cliente_id = int.Parse(userIdClaim); // (Descomenta y usa el nombre exacto de tu propiedad)
+            int userId = int.Parse(userIdClaim);
+            var oferta = await _ofertasService.AddAsync(createDto, userId);
 
-            var oferta = await _ofertasService.AddAsync(createDto);
-
-            // Nota: Ajusta 'oferta.id' u 'oferta.Id' según cómo tengas nombrada la propieda|d en tu DTO de respuesta
             return CreatedAtAction(nameof(GetById), new { id = oferta.Id }, oferta);
         }
         catch (KeyNotFoundException ex)
