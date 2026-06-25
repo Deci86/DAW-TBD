@@ -20,7 +20,7 @@ namespace SmallChangeDAW.CORE.Core.Services
             _configuration = configuration;
         }
 
-        public async Task<bool> RegistrarUsuarioAsync(RegistroDTO registroDto)
+        public async Task<bool> RegistrarUsuarioAsync(RegistroDTO registroDto)  
         {
             // 1. Validar si el email ya se encuentra registrado
             var usuarioExistente = await _clientesRepository.GetByEmailAsync(registroDto.Email);

@@ -27,15 +27,15 @@ public class OfertasService : IOfertasService
         return oferta is null ? null : MapToDTO(oferta);
     }
 
-    public async Task<OfertaResponseDTO> AddAsync(CreateOfertaDTO createDto)
+    public async Task<OfertaResponseDTO> AddAsync(CreateOfertaDTO createDto, int clienteId)
     {
-        var cliente = await _clientesRepository.GetByIdAsync(createDto.ClienteId);
+        var cliente = await _clientesRepository.GetByIdAsync(clienteId);
         if (cliente is null)
-            throw new KeyNotFoundException($"El cliente con ID {createDto.ClienteId} no existe.");
+            throw new KeyNotFoundException($"El cliente con ID {clienteId} no existe.");
 
         var oferta = new Oferta
         {
-            cliente_id = createDto.ClienteId,
+            cliente_id = clienteId,
             moneda_a_enviar = createDto.MonedaAEnviar,
             moneda_a_recibir = createDto.MonedaARecibir,
             tipo_cambio = createDto.TipoCambio,

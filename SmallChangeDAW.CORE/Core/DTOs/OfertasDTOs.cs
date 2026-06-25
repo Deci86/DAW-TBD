@@ -2,7 +2,6 @@ namespace SmallChangeDAW.CORE.Core.DTOs;
 
 public class CreateOfertaDTO
 {
-    public int ClienteId { get; set; }
     public string MonedaAEnviar { get; set; } = string.Empty;
     public string MonedaARecibir { get; set; } = string.Empty;
     public decimal TipoCambio { get; set; }
