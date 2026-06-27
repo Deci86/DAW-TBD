@@ -82,6 +82,8 @@ public class OfertasService : IOfertasService
         {
             Id = oferta.id,
             ClienteId = oferta.cliente_id,
+            NombreUsuario = oferta.Cliente != null ? oferta.Cliente.nombre : $"Usuario #{oferta.cliente_id}",
+            CalificacionUsuario = oferta.Cliente != null ? (double)oferta.Cliente.calificacion_vendedor : 0.0,
             MonedaAEnviar = oferta.moneda_a_enviar,
             MonedaARecibir = oferta.moneda_a_recibir,
             Cantidad = oferta.cantidad,

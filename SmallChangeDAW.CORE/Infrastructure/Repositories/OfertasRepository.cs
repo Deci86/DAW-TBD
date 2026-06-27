@@ -18,6 +18,7 @@ public class OfertasRepository : IOfertasRepository
     public async Task<IEnumerable<Oferta>> GetAllAsync()
     {
         return await _context.Ofertas
+            .Include(o => o.Cliente)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -25,6 +26,7 @@ public class OfertasRepository : IOfertasRepository
     public async Task<Oferta?> GetByIdAsync(int id)
     {
         return await _context.Ofertas
+            .Include(o => o.Cliente)
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.id == id);
     }

@@ -20,6 +20,8 @@ public class OfertaResponseDTO
 {
     public int Id { get; set; }
     public int ClienteId { get; set; }
+    public string NombreUsuario { get; set; }
+    public double CalificacionUsuario { get; set; }
     public string MonedaAEnviar { get; set; } = string.Empty;
     public string MonedaARecibir { get; set; } = string.Empty;
     public decimal Cantidad { get; set; }
