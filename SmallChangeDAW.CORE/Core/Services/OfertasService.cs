@@ -27,6 +27,15 @@ public class OfertasService : IOfertasService
         return oferta is null ? null : MapToDTO(oferta);
     }
 
+    public async Task<IEnumerable<OfertaResponseDTO>> GetByUserIdAsync(int clienteId)
+    {
+        // Llamamos al repositorio para obtener solo las ofertas de este cliente
+        var ofertas = await _ofertasRepository.GetByClienteIdAsync(clienteId);
+
+        // Reutilizamos tu método privado para mapear la lista a DTOs
+        return ofertas.Select(MapToDTO);
+    }   
+
     public async Task<OfertaResponseDTO> AddAsync(CreateOfertaDTO createDto, int clienteId)
     {
         var cliente = await _clientesRepository.GetByIdAsync(clienteId);

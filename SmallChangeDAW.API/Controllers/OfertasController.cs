@@ -25,6 +25,25 @@ public class OfertasController : ControllerBase
         return Ok(ofertas);
     }
 
+    // GET: Requiere sesión. Devuelve solo las ofertas del usuario logueado
+    [HttpGet("mis-ofertas")]
+    [Authorize]
+    public async Task<IActionResult> GetMisOfertas()
+    {
+        // 1. Extraemos el ID del usuario directamente del token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null) return Unauthorized();
+
+        int userId = int.Parse(userIdClaim);
+
+        // 2. Llamamos al servicio pasando el ID del usuario
+        // NOTA: Tendrás que crear este método en tu capa de servicio e interfaz
+        var misOfertas = await _ofertasService.GetByUserIdAsync(userId);
+
+        return Ok(misOfertas);
+    }
+
     // GET por ID: Público
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)

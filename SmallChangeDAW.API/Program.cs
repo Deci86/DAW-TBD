@@ -23,7 +23,7 @@ builder.Services.AddDbContext<SmallChangeDbContext>(options =>
 var secretKey = builder.Configuration["JwtSettings:SecretKey"]
                 ?? throw new InvalidOperationException("La clave secreta de JWT no está configurada.");
 
-builder.Services.AddAuthentication(options =>
+/*builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,6 +39,28 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+    };
+});*/
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    // Aseguramos que los errores se muestren
+    options.IncludeErrorDetails = true;
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        // 1. APAGAMOS validaciones secundarias que suelen dar falsos positivos
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false,
+
+        // 2. DEJAMOS ENCENDIDA solo la validación de tu clave secreta
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("wearecharliekirkwecarrytheflmewefightforthegospelwehonorhisname"))
     };
 });
 

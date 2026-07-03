@@ -31,6 +31,14 @@ public class OfertasRepository : IOfertasRepository
             .FirstOrDefaultAsync(o => o.id == id);
     }
 
+    public async Task<IEnumerable<Oferta>> GetByClienteIdAsync(int clienteId)
+    {
+        return await _context.Ofertas
+            .Include(o => o.Cliente)
+            .Where(o => o.cliente_id == clienteId)
+            .ToListAsync();
+    }
+
     public async Task<int> AddAsync(Oferta oferta)
     {
         _context.Ofertas.Add(oferta);
