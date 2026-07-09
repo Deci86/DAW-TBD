@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SmallChangeDAW.CORE.Core.DTOs;
 using SmallChangeDAW.CORE.Core.Interfaces;
 using SmallChangeDAW.CORE.Models;
@@ -99,6 +100,45 @@ public class OfertasService : IOfertasService
             TipoCambio = oferta.tipo_cambio,
             Estado = oferta.estado,
             FechaCreacion = oferta.fecha_creacion
+        };
+    }
+
+    public async Task<CoincidenciaOfertaResponseDTO?> BuscarCoincidenciaInversaAsync(BuscarCoincidenciaRequestDTO request)
+    {
+        // 1. Regla matemática básica: Tasa Inversa = 1 / Tasa Actual
+        if (request.TipoCambio <= 0) return null;
+        decimal tasaInversaTeorica = 1 / request.TipoCambio;
+
+        // 2. Definimos una tolerancia del 2% (0.02) arriba y abajo para la tasa del mercado cruzado
+        decimal tolerancia = 0.02m;
+        decimal tasaMinima = tasaInversaTeorica * (1 - tolerancia);
+        decimal tasaMaxima = tasaInversaTeorica * (1 + tolerancia);
+
+        // 3. Cantidad que el usuario actual espera recibir en la moneda de destino
+        decimal cantidadObjetivoADemandar = request.Cantidad * request.TipoCambio;
+
+        // 4. Solicitamos los candidatos crudos al repositorio
+        var ofertasCandidatas = await _ofertasRepository.ObtenerOfertasInversasDisponiblesAsync(
+            request.MonedaAEnviar,
+            request.MonedaARecibir,
+            tasaMinima,
+            tasaMaxima
+        );
+
+        // 5. Procesamos el "Match" óptimo ordenando por la que más se acerque a la cantidad necesitada
+        var mejorMatch = ofertasCandidatas
+            .OrderBy(o => Math.Abs(o.cantidad - cantidadObjetivoADemandar))
+            .FirstOrDefault();
+
+        if (mejorMatch == null) return null;
+
+        // 6. Mapeamos al DTO de salida
+        return new CoincidenciaOfertaResponseDTO
+        {
+            Id = mejorMatch.id,
+            Cantidad = mejorMatch.cantidad,
+            TipoCambio = mejorMatch.tipo_cambio,
+            NombreUsuario = mejorMatch.Cliente?.nombre ?? "Usuario Anónimo"
         };
     }
 }

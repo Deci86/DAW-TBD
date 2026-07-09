@@ -63,4 +63,18 @@ public class OfertasRepository : IOfertasRepository
         var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
+
+    public async Task<IEnumerable<Oferta>> ObtenerOfertasInversasDisponiblesAsync(
+    string monedaAEnviar, string monedaARecibir, decimal tasaMinima, decimal tasaMaxima)
+    {
+        return await _context.Ofertas
+            .Include(o => o.Cliente)
+            .AsNoTracking()  //evitar que Entity Framework sobrecargue la memoria guardando el estado de las ofertas
+            .Where(o => o.estado == true && // Comparación booleana correcta
+                        o.moneda_a_enviar == monedaARecibir &&
+                        o.moneda_a_recibir == monedaAEnviar &&
+                        o.tipo_cambio >= tasaMinima &&
+                        o.tipo_cambio <= tasaMaxima)
+            .ToListAsync();
+    }
 }

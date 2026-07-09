@@ -130,4 +130,27 @@ public class OfertasController : ControllerBase
         var deleted = await _ofertasService.DeleteAsync(id);
         return NoContent();
     }
+
+    // GET ofertas coincidentes (quiere -> tiene, tiene -> quiere)
+    [HttpGet("buscar-coincidencia")]
+    public async Task<IActionResult> BuscarCoincidencia([FromQuery] BuscarCoincidenciaRequestDTO request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.MonedaAEnviar) || string.IsNullOrWhiteSpace(request.MonedaARecibir))
+                return BadRequest(new { mensaje = "Las monedas de envío y recepción son obligatorias." });
+
+            if (request.Cantidad <= 0 || request.TipoCambio <= 0)
+                return BadRequest(new { mensaje = "La cantidad y el tipo de cambio deben ser mayores a cero." });
+
+            var coincidencia = await _ofertasService.BuscarCoincidenciaInversaAsync(request);
+
+            // Si no hay coincidencias devuelve 200 OK con null o un objeto vacío sin romper el flujo
+            return Ok(coincidencia);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { mensaje = "Error interno al procesar el matching de ofertas.", detalle = ex.Message });
+        }
+    }
 }

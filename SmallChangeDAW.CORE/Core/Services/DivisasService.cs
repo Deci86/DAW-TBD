@@ -105,4 +105,60 @@ public class DivisasService : IDivisasService
         [JsonPropertyName("result")]
         public decimal Result { get; set; }
     }
+
+    //Obtener los codigos de las monedas para los selectores 
+    public async Task<Dictionary<string, string>> ObtenerMonedasDisponiblesAsync()
+    {
+        try
+        {
+            var apiKey = _configuration["UnirateApi:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+                throw new InvalidOperationException("API key de UniRate no está configurada.");
+
+            var client = _httpClientFactory.CreateClient();
+            var url = $"{_apiBaseUrl}currencies?api_key={apiKey}";
+
+            var response = await client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Error al consultar la API de divisas: {response.StatusCode}. URL solicitada: {url}");
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            // 1. Deserializamos usando la estructura real de UniRate (Objeto con una lista interna)
+            var jsonResponse = JsonSerializer.Deserialize<UniRateCurrenciesResponse>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // 2. Convertimos la lista de strings a un Dictionary<string, string> para respetar el contrato de la interfaz (IDivisasService)
+            var resultado = new Dictionary<string, string>();
+
+            if (jsonResponse?.Currencies != null)
+            {
+                foreach (var codigo in jsonResponse.Currencies)
+                {
+                    if (!string.IsNullOrWhiteSpace(codigo))
+                    {
+                        // Como la API solo da las siglas (USD, PEN), las usamos tanto de clave como de valor
+                        resultado[codigo.ToUpper()] = codigo.ToUpper();
+                    }
+                }
+            }
+
+            return resultado;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Error al obtener u organizar la lista de monedas: {ex.Message}", ex);
+        }
+    }
+    private class UniRateCurrenciesResponse
+    {
+        [JsonPropertyName("currencies")]
+        public List<string> Currencies { get; set; } = new();
+
+        [JsonPropertyName("count")]
+        public int Count { get; set; }
+    }
 }

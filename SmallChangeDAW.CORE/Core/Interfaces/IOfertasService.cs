@@ -10,4 +10,5 @@ public interface IOfertasService
     Task<OfertaResponseDTO> AddAsync(CreateOfertaDTO createDto, int clienteId);
     Task<bool> UpdateAsync(int id, UpdateOfertaDTO updateDto);
     Task<bool> DeleteAsync(int id);
+    Task<CoincidenciaOfertaResponseDTO?> BuscarCoincidenciaInversaAsync(BuscarCoincidenciaRequestDTO request);
 }

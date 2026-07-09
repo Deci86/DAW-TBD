@@ -51,4 +51,18 @@ public class DivisasController : ControllerBase
             return BadRequest(new { mensaje = ex.Message });
         }
     }
+
+    [HttpGet("monedas")]
+    public async Task<IActionResult> ObtenerMonedas()
+    {
+        try
+        {
+            var monedas = await _divisasService.ObtenerMonedasDisponiblesAsync();
+            return Ok(monedas);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
+    }
 }

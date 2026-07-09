@@ -6,4 +6,5 @@ public interface IDivisasService
 {
     Task<TipoCambioResponseDTO> ObtenerTipoCambioAsync(string monedaIn, string monedaOut);
     Task<CambioMonedaResponseDTO> ConvertirMonedaAsync(string monedaIn, string monedaOut, decimal monto);
+    Task<Dictionary<string, string>> ObtenerMonedasDisponiblesAsync();
 }
