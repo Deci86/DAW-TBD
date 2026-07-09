@@ -48,19 +48,18 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // Aseguramos que los errores se muestren
     options.IncludeErrorDetails = true;
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        // 1. APAGAMOS validaciones secundarias que suelen dar falsos positivos
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = false,
-
-        // 2. DEJAMOS ENCENDIDA solo la validación de tu clave secreta
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("wearecharliekirkwecarrytheflmewefightforthegospelwehonorhisname"))
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ClockSkew = TimeSpan.Zero
     };
 });
 

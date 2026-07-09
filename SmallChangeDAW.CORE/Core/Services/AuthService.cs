@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using SmallChangeDAW.CORE.Core.DTOs;
 using SmallChangeDAW.CORE.Core.Interfaces;
@@ -69,7 +70,7 @@ namespace SmallChangeDAW.CORE.Core.Services
 
             return new AuthResponseDTO
             {
-                Token = tokenGenerado
+                token = tokenGenerado
             };
         }
 
@@ -77,30 +78,29 @@ namespace SmallChangeDAW.CORE.Core.Services
         private string GenerarJwtToken(Cliente cliente)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
-
-            var secretKey = _configuration["JwtSettings:SecretKey"]
+            var secretKey = jwtSettings["SecretKey"]
                             ?? throw new InvalidOperationException("La clave secreta de JWT no está configurada.");
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            // Cambiamos al Handler moderno
+            var tokenHandler = new JsonWebTokenHandler();
+            var key = Encoding.UTF8.GetBytes(secretKey);
 
-            // Definir los Claims usando las propiedades exactas de tu modelo
-            var claims = new[]
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(ClaimTypes.NameIdentifier, cliente.id.ToString()),
-                new Claim(ClaimTypes.Email, cliente.email),
-                new Claim(ClaimTypes.Name, cliente.nombre)
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, cliente.id.ToString()),
+                    new Claim(ClaimTypes.Email, cliente.email),
+                    new Claim(ClaimTypes.Name, cliente.nombre)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["DurationInMinutes"] ?? "60")),
+                Issuer = jwtSettings["Issuer"],
+                Audience = jwtSettings["Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256) // HmacSha256 estándar
             };
 
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["DurationInMinutes"] ?? "60")),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            // Retornamos usando el nuevo Handler moderno
+            return tokenHandler.CreateToken(tokenDescriptor);
         }
     }
 }
