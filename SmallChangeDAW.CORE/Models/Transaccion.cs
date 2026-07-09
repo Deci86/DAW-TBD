@@ -7,4 +7,7 @@ public class Transaccion
     public int cliente_comprador_id { get; set; }
     public DateTime fecha_transaccion { get; set; }
     public string estado { get; set; }
+
+    public Oferta? Oferta { get; set; }
+    public Cliente? ClienteComprador { get; set; }
 }

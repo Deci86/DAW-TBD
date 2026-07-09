@@ -22,6 +22,8 @@ public partial class SmallChangeDbContext : DbContext
 
     public virtual DbSet<Transaccion> Transacciones { get; set; }
 
+    public virtual DbSet<AuditoriaTransaccion> AuditoriasTransacciones { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cliente>(entity =>
@@ -121,17 +123,65 @@ public partial class SmallChangeDbContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("pendiente");
 
-            entity.HasOne<Oferta>()
+            entity.HasOne(e => e.Oferta)
                 .WithMany()
                 .HasForeignKey(e => e.oferta_id)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Transaccion_Oferta");
 
-            entity.HasOne<Cliente>()
+            entity.HasOne(e => e.ClienteComprador)
                 .WithMany()
                 .HasForeignKey(e => e.cliente_comprador_id)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Transaccion_ClienteComprador");
+        });
+
+        modelBuilder.Entity<AuditoriaTransaccion>(entity =>
+        {
+            entity.HasKey(e => e.id);
+
+            entity.Property(e => e.id)
+                .HasColumnName("id");
+
+            entity.Property(e => e.transaccion_id)
+                .HasColumnName("transaccion_id");
+
+            entity.Property(e => e.usuario_id)
+                .HasColumnName("usuario_id");
+
+            entity.Property(e => e.accion)
+                .IsRequired()
+                .HasColumnName("accion")
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.Property(e => e.estado_anterior)
+                .HasColumnName("estado_anterior")
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.estado_nuevo)
+                .IsRequired()
+                .HasColumnName("estado_nuevo")
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.Property(e => e.fecha_accion)
+                .HasColumnName("fecha_accion")
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(e => e.Transaccion)
+                .WithMany()
+                .HasForeignKey(e => e.transaccion_id)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AuditoriaTransaccion_Transaccion");
+
+            entity.HasOne(e => e.Usuario)
+                .WithMany()
+                .HasForeignKey(e => e.usuario_id)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_AuditoriaTransaccion_Clientes");
         });
 
         OnModelCreatingPartial(modelBuilder);
