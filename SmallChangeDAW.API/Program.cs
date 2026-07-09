@@ -67,12 +67,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IClientesRepository, ClientesRepository>();
 builder.Services.AddScoped<IOfertasRepository, OfertasRepository>();
 builder.Services.AddScoped<ITransaccionesRepository, TransaccionesRepository>();
+builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 
 // Registrar servicios
 builder.Services.AddScoped<IClientesService, ClientesService>();
 builder.Services.AddScoped<IDivisasService, DivisasService>();
 builder.Services.AddScoped<IOfertasService, OfertasService>();
 builder.Services.AddScoped<ITransaccionesService, TransaccionesService>();
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 // Registrar el nuevo servicio de Autenticación
 builder.Services.AddScoped<IAuthService, AuthService>();

@@ -26,13 +26,26 @@ CREATE TABLE Ofertas (
         REFERENCES Clientes(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Transacciones (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    oferta_id INT,
-    cliente_comprador_id INT,
-    fecha_transaccion DATETIME2 DEFAULT GETDATE(),
-    estado NVARCHAR(20) DEFAULT 'pendiente',
-    CONSTRAINT CK_Estado_Transaccion CHECK (estado IN ('pendiente', 'completada', 'cancelada')),
-    CONSTRAINT FK_Transacciones_Ofertas FOREIGN KEY (oferta_id) REFERENCES Ofertas(id),
-    CONSTRAINT FK_Transacciones_Clientes FOREIGN KEY (cliente_comprador_id) REFERENCES Clientes(id)
+CREATE TABLE AuditoriaTransacciones (
+	id INT IDENTITY(1,1) PRIMARY KEY,
+	transaccion_id INT NOT NULL,
+	usuario_id INT NOT NULL,
+	accion VARCHAR(20) NOT NULL,              -- 'CREAR', 'ACTUALIZAR_ESTADO', 'ELIMINAR'
+	estado_anterior VARCHAR(50) NULL,
+	estado_nuevo VARCHAR(50) NOT NULL,
+	fecha_accion DATETIME2 DEFAULT GETUTCDATE(),
+	CONSTRAINT FK_AuditoriaTransacciones_Transaccion 
+		FOREIGN KEY (transaccion_id) REFERENCES Transacciones(id),
+	CONSTRAINT FK_AuditoriaTransacciones_Clientes 
+		FOREIGN KEY (usuario_id) REFERENCES dbo.Clientes(id)
 );
+
+
+CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_TransaccionId 
+	ON dbo.AuditoriaTransacciones(transaccion_id);
+
+CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_UsuarioId 
+	ON dbo.AuditoriaTransacciones(usuario_id);
+
+CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_FechaAccion 
+	ON dbo.AuditoriaTransacciones(fecha_accion DESC);

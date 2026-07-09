@@ -15,8 +15,9 @@ public class TransaccionesRepository : ITransaccionesRepository
     }
 
     public async Task<IEnumerable<Transaccion>> GetAllAsync()
-    {
+    {   
         return await _context.Transacciones
+            .Include(t => t.Oferta)
             .AsNoTracking()
             .ToListAsync();
     }
