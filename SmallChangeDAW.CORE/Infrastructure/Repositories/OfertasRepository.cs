@@ -52,18 +52,6 @@ public class OfertasRepository : IOfertasRepository
         var rowsAffected = await _context.SaveChangesAsync();
         return rowsAffected > 0;
     }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var oferta = await _context.Ofertas.FindAsync(id);
-        if (oferta == null)
-            return false;
-
-        _context.Ofertas.Remove(oferta);
-        var rowsAffected = await _context.SaveChangesAsync();
-        return rowsAffected > 0;
-    }
-
     public async Task<IEnumerable<Oferta>> ObtenerOfertasInversasDisponiblesAsync(
     string monedaAEnviar, string monedaARecibir, decimal tasaMinima, decimal tasaMaxima)
     {

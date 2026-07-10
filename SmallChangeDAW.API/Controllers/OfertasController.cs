@@ -107,30 +107,6 @@ public class OfertasController : ControllerBase
             return BadRequest(new { mensaje = ex.Message });
         }
     }
-
-    // DELETE: Requiere sesión y ser el creador de la oferta
-    [HttpDelete("{id}")]
-    [Authorize]
-    public async Task<IActionResult> Delete(int id)
-    {
-        // 1. Obtener la oferta original
-        var ofertaOriginal = await _ofertasService.GetByIdAsync(id);
-        if (ofertaOriginal == null)
-            return NotFound(new { mensaje = $"Oferta con ID {id} no encontrada." });
-
-        // 2. Extraer el ID del token
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        // 3. Validar propiedad
-        if (ofertaOriginal.ClienteId.ToString() != userIdClaim)
-        {
-            return Forbid();
-        }
-
-        var deleted = await _ofertasService.DeleteAsync(id);
-        return NoContent();
-    }
-
     // GET ofertas coincidentes (quiere -> tiene, tiene -> quiere)
     [HttpGet("buscar-coincidencia")]
     public async Task<IActionResult> BuscarCoincidencia([FromQuery] BuscarCoincidenciaRequestDTO request)

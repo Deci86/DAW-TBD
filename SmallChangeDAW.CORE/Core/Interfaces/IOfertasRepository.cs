@@ -9,7 +9,6 @@ public interface IOfertasRepository
     Task<IEnumerable<Oferta>> GetByClienteIdAsync(int clienteId);
     Task<int> AddAsync(Oferta oferta);
     Task<bool> UpdateAsync(Oferta oferta);
-    Task<bool> DeleteAsync(int id);
     Task<IEnumerable<Oferta>> ObtenerOfertasInversasDisponiblesAsync(
         string monedaAEnviar,
         string monedaARecibir,

@@ -80,12 +80,6 @@ public class OfertasService : IOfertasService
 
         return await _ofertasRepository.UpdateAsync(ofertaExistente);
     }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        return await _ofertasRepository.DeleteAsync(id);
-    }
-
     private static OfertaResponseDTO MapToDTO(Oferta oferta)
     {
         return new OfertaResponseDTO
