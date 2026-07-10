@@ -9,7 +9,8 @@ CREATE TABLE Clientes (
 	email VARCHAR(100) UNIQUE NOT NULL,
     pass_hash VARCHAR(255) NOT NULL,
     calificacion_vendedor DECIMAL(3,2) DEFAULT 0.00,
-fecha_registro DATETIME2 DEFAULT GETDATE()
+	cant_calificaciones INT,
+	fecha_registro DATETIME2 DEFAULT GETDATE()
 );
 
 CREATE TABLE Ofertas (
@@ -36,11 +37,6 @@ CREATE TABLE Transacciones (
 	CONSTRAINT FK_Transacciones_Clientes FOREIGN KEY (cliente_comprador_id) REFERENCES Clientes(id)
 );
 
-USE SmallChange;
-
-IF OBJECT_ID(N'dbo.AuditoriasTransacciones', N'U') IS NOT NULL
-	DROP TABLE dbo.AuditoriasTransacciones;
-
 CREATE TABLE dbo.AuditoriasTransacciones (
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	transaccion_id INT NOT NULL,
@@ -66,12 +62,3 @@ CREATE NONCLUSTERED INDEX IX_AuditoriasTransacciones_UsuarioId
 CREATE NONCLUSTERED INDEX IX_AuditoriasTransacciones_FechaAccion 
 	ON dbo.AuditoriasTransacciones(fecha_accion DESC);
 
-SELECT 
-	COLUMN_NAME, 
-	DATA_TYPE, 
-	IS_NULLABLE
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'AuditoriasTransacciones'
-ORDER BY ORDINAL_POSITION;
-
-PRINT 'Tabla AuditoriasTransacciones creada correctamente.';
