@@ -30,10 +30,7 @@ namespace SmallChangeDAW.CORE.Core.DTOs
     public class AuthResponseDTO
     {
         public string token { get; set; } = string.Empty;
-
-        // Puedes descomentar estas líneas si tu frontend en Quasar 
-        // necesita saber de inmediato quién es el usuario que se acaba de loguear
-        // public int ClienteId { get; set; }
-        // public string Nombre { get; set; } = string.Empty;
+        public int ClienteId { get; set; }
+        public string Nombre { get; set; } = string.Empty;
     }
 }

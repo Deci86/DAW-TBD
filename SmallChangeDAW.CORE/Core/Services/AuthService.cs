@@ -52,24 +52,21 @@ namespace SmallChangeDAW.CORE.Core.Services
         {
             // 1. Buscar al cliente por su correo electrónico
             var cliente = await _clientesRepository.GetByEmailAsync(loginDto.Email);
-            if (cliente == null)
-            {
-                return null; // El usuario no existe
-            }
+            if (cliente == null) return null;
 
-            // 2. Verificar si la contraseña ingresada coincide con el hash almacenado
+            // 2. Verificar contraseña
             bool esPasswordValido = BCrypt.Net.BCrypt.Verify(loginDto.Password, cliente.pass_hash);
-            if (!esPasswordValido)
-            {
-                return null; // Contraseña incorrecta
-            }
+            if (!esPasswordValido) return null;
 
-            // 3. Credenciales correctas: Proceder a generar el Bearer Token
+            // 3. Generar token
             var tokenGenerado = GenerarJwtToken(cliente);
 
+            // FIX PINPOINT: Mapear el DTO completo con los datos del objeto persistido
             return new AuthResponseDTO
             {
-                token = tokenGenerado
+                token = tokenGenerado,
+                ClienteId = cliente.id,   // <-- Crucial para el localStorage.setItem('userId')
+                Nombre = cliente.nombre   // <-- Pasa el nombre directo al Login
             };
         }
 
