@@ -9,7 +9,8 @@ CREATE TABLE Clientes (
 	email VARCHAR(100) UNIQUE NOT NULL,
     pass_hash VARCHAR(255) NOT NULL,
     calificacion_vendedor DECIMAL(3,2) DEFAULT 0.00,
-fecha_registro DATETIME2 DEFAULT GETDATE()
+	cant_calificaciones INT,
+	fecha_registro DATETIME2 DEFAULT GETDATE()
 );
 
 CREATE TABLE Ofertas (
