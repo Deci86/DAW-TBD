@@ -8,7 +8,6 @@ CREATE TABLE Clientes (
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     pass_hash VARCHAR(255) NOT NULL,
-    promedio_calificacion_comprador DECIMAL(3,2) DEFAULT 0.00,
     calificacion_vendedor DECIMAL(3,2) DEFAULT 0.00,
     fecha_registro DATETIME2 DEFAULT GETDATE()
 );
