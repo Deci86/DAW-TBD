@@ -87,7 +87,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan Pérez Actualizado\",\n  \"email\": \"juan.nuevo@ejemplo.com\",\n  \"passHash\": \"nuevo_hash_456\",\n  \"promedioCalificacionComprador\": 4.50,\n  \"calificacionVendedor\": 3.75\n}"
+              "raw": "{\n  \"nombre\": \"Juan Pérez Actualizado\",\n  \"email\": \"juan.nuevo@ejemplo.com\",\n  \"passHash\": \"nuevo_hash_456\",\n  \"calificacionVendedor\": 3.75\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/clientes/1",

@@ -39,7 +39,6 @@ namespace SmallChangeDAW.CORE.Core.Services
                 nombre = registroDto.Nombre,
                 email = registroDto.Email,
                 pass_hash = passwordHash,
-                promedio_calificacion_comprador = 0.00m,
                 calificacion_vendedor = 0.00m,
                 fecha_registro = DateTime.UtcNow
             };

@@ -45,10 +45,6 @@ public partial class SmallChangeDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(500);
 
-            entity.Property(e => e.promedio_calificacion_comprador)
-                .HasColumnType("decimal(3, 2)")
-                .HasDefaultValue(0m);
-
             entity.Property(e => e.calificacion_vendedor)
                 .HasColumnType("decimal(3, 2)")
                 .HasDefaultValue(0m);
