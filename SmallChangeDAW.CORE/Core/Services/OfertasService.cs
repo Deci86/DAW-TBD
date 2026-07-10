@@ -141,4 +141,9 @@ public class OfertasService : IOfertasService
             NombreUsuario = mejorMatch.Cliente?.nombre ?? "Usuario Anónimo"
         };
     }
+
+    public async Task<bool> ActualizarEstadoAsync(int id, bool nuevoEstado)
+    {
+        return await _ofertasRepository.CambiarEstadoAsync(id, nuevoEstado);
+    }
 }

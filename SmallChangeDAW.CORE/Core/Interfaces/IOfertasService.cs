@@ -11,4 +11,5 @@ public interface IOfertasService
     Task<bool> UpdateAsync(int id, UpdateOfertaDTO updateDto);
     Task<bool> DeleteAsync(int id);
     Task<CoincidenciaOfertaResponseDTO?> BuscarCoincidenciaInversaAsync(BuscarCoincidenciaRequestDTO request);
+    Task<bool> ActualizarEstadoAsync(int id, bool nuevoEstado);
 }

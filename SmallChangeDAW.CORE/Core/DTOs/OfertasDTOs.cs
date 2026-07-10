@@ -46,3 +46,8 @@ public class CoincidenciaOfertaResponseDTO
     public string NombreUsuario { get; set; } = string.Empty;
     public decimal PorcentajeSimilitud { get; set; } // Opcional: para mostrar qué tan cerca está del match perfecto
 }
+
+public class ActualizarEstadoOfertaDTO
+{
+    public bool Estado { get; set; }
+}

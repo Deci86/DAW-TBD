@@ -16,4 +16,5 @@ public interface IOfertasRepository
         decimal tasaMinima,
         decimal tasaMaxima
     );
+    Task<bool> CambiarEstadoAsync(int id, bool nuevoEstado);
 }

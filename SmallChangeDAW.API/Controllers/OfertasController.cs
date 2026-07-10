@@ -153,4 +153,23 @@ public class OfertasController : ControllerBase
             return StatusCode(500, new { mensaje = "Error interno al procesar el matching de ofertas.", detalle = ex.Message });
         }
     }
+
+    [Authorize]
+    [HttpPatch("{id}/estado")]
+    public async Task<IActionResult> ActualizarEstado(int id, [FromBody] ActualizarEstadoOfertaDTO dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var resultado = await _ofertasService.ActualizarEstadoAsync(id, dto.Estado);
+
+        if (!resultado)
+        {
+            return NotFound(new { mensaje = $"No se encontró la oferta con ID {id}." });
+        }
+
+        return Ok(new { mensaje = "El estado de la oferta ha sido actualizado con éxito." });
+    }
 }

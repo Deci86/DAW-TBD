@@ -77,4 +77,15 @@ public class OfertasRepository : IOfertasRepository
                         o.tipo_cambio <= tasaMaxima)
             .ToListAsync();
     }
+
+    public async Task <bool> CambiarEstadoAsync(int id, bool nuevoEstado)
+    {
+        var oferta = await _context.Ofertas.FindAsync(id);
+        if (oferta == null) return false;
+
+        oferta.estado = nuevoEstado; //asignar valor true o false
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
