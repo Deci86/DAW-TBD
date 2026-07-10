@@ -1,4 +1,5 @@
-﻿using SmallChangeDAW.CORE.Models;
+﻿using SmallChangeDAW.CORE.Core.DTOs;
+using SmallChangeDAW.CORE.Models;
 
 namespace SmallChangeDAW.CORE.Core.Interfaces;
 
@@ -9,4 +10,5 @@ public interface ITransaccionesRepository
     Task<int> AddAsync(Transaccion transaccion);
     Task<bool> UpdateAsync(Transaccion transaccion);
     Task<bool> DeleteAsync(int id);
+    Task<Transaccion> CrearConDisputaAsync(CreateTransaccionDTO createDto, int usuarioIdActual);
 }
