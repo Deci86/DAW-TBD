@@ -12,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+// Agrega esta línea para habilitar IMemoryCache en toda tu app
+builder.Services.AddMemoryCache();
 
 // Configurar Entity Framework Core con SQL Server
 builder.Services.AddDbContext<SmallChangeDbContext>(options =>
