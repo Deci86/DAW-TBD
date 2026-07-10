@@ -26,7 +26,7 @@ CREATE TABLE Ofertas (
         REFERENCES Clientes(id) ON DELETE CASCADE
 );
 
-CREATE TABLE AuditoriaTransacciones (
+CREATE TABLE AuditoriasTransacciones (
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	transaccion_id INT NOT NULL,
 	usuario_id INT NOT NULL,
@@ -34,18 +34,18 @@ CREATE TABLE AuditoriaTransacciones (
 	estado_anterior VARCHAR(50) NULL,
 	estado_nuevo VARCHAR(50) NOT NULL,
 	fecha_accion DATETIME2 DEFAULT GETUTCDATE(),
-	CONSTRAINT FK_AuditoriaTransacciones_Transaccion 
+	CONSTRAINT FK_AuditoriasTransacciones_Transaccion 
 		FOREIGN KEY (transaccion_id) REFERENCES Transacciones(id),
-	CONSTRAINT FK_AuditoriaTransacciones_Clientes 
+	CONSTRAINT FK_AuditoriasTransacciones_Clientes 
 		FOREIGN KEY (usuario_id) REFERENCES dbo.Clientes(id)
 );
 
 
-CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_TransaccionId 
-	ON dbo.AuditoriaTransacciones(transaccion_id);
+CREATE NONCLUSTERED INDEX IX_AuditoriasTransacciones_TransaccionId 
+	ON dbo.AuditoriasTransacciones(transaccion_id);
 
-CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_UsuarioId 
-	ON dbo.AuditoriaTransacciones(usuario_id);
+CREATE NONCLUSTERED INDEX IX_AuditoriasTransacciones_UsuarioId 
+	ON dbo.AuditoriasTransacciones(usuario_id);
 
-CREATE NONCLUSTERED INDEX IX_AuditoriaTransacciones_FechaAccion 
-	ON dbo.AuditoriaTransacciones(fecha_accion DESC);
+CREATE NONCLUSTERED INDEX IX_AuditoriasTransacciones_FechaAccion 
+	ON dbo.AuditoriasTransacciones(fecha_accion DESC);
