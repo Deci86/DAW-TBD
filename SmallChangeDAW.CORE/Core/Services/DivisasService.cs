@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Caching.Memory; // 1. NUEVO IMPORT PARA EL CACHÉ
 
 namespace SmallChangeDAW.CORE.Core.Services;
 
@@ -12,63 +13,74 @@ public class DivisasService : IDivisasService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly string _apiBaseUrl;
+    private readonly IMemoryCache _cache; // 2. DECLARAMOS EL CACHÉ
 
-    public DivisasService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    // 3. INYECTAMOS EL CACHÉ EN EL CONSTRUCTOR
+    public DivisasService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache cache)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
-        // Asignamos el valor del appsettings.json o un fallback a la URL oficial
         _apiBaseUrl = configuration["UnirateApi:ApiUrl"];
+        _cache = cache; // Asignamos la variable
     }
 
     public async Task<TipoCambioResponseDTO> ObtenerTipoCambioAsync(string monedaIn, string monedaOut)
     {
-        try
+        // 4. Creamos una llave única, ej: "Tasa_USD_EUR"
+        string cacheKey = $"Tasa_{monedaIn.ToUpper()}_{monedaOut.ToUpper()}";
+
+        // 5. Envolvemos tu lógica original en GetOrCreateAsync
+        return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            var apiKey = _configuration["UnirateApi:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
-                throw new InvalidOperationException("API key de UniRate no está configurada.");
+            // Configuramos el caché para que este dato viva por 10 minutos
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
 
-            var client = _httpClientFactory.CreateClient();
-
-            var url = $"{_apiBaseUrl}convert?api_key={apiKey}&from={monedaIn.ToUpper()}&to={monedaOut.ToUpper()}&amount=1";
-
-            var response = await client.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Error al consultar la API de divisas: {response.StatusCode}. URL solicitada: {url}");
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            var jsonResponse = JsonSerializer.Deserialize<UniRateConvertResponse>(content, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
+                var apiKey = _configuration["UnirateApi:ApiKey"];
+                if (string.IsNullOrEmpty(apiKey))
+                    throw new InvalidOperationException("API key de UniRate no está configurada.");
 
-            // Validamos que el resultado exista y sea mayor a 0
-            if (jsonResponse == null || jsonResponse.Result <= 0)
-                throw new InvalidOperationException($"La API no devolvió un resultado válido para la conversión de {monedaIn} a {monedaOut}.");
+                var client = _httpClientFactory.CreateClient();
 
-            // Como le enviamos amount=1 en la URL, el "result" es exactamente nuestra tasa de cambio unitari   a
-            var tipoCambio = jsonResponse.Result;
+                var url = $"{_apiBaseUrl}convert?api_key={apiKey}&from={monedaIn.ToUpper()}&to={monedaOut.ToUpper()}&amount=1";
 
-            return new TipoCambioResponseDTO
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Error al consultar la API de divisas: {response.StatusCode}. URL solicitada: {url}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                var jsonResponse = JsonSerializer.Deserialize<UniRateConvertResponse>(content, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (jsonResponse == null || jsonResponse.Result <= 0)
+                    throw new InvalidOperationException($"La API no devolvió un resultado válido para la conversión de {monedaIn} a {monedaOut}.");
+
+                var tipoCambio = jsonResponse.Result;
+
+                return new TipoCambioResponseDTO
+                {
+                    MonedaIn = monedaIn.ToUpper(),
+                    MonedaOut = monedaOut.ToUpper(),
+                    TipoCambio = tipoCambio,
+                    FechaActualizacion = DateTime.Now
+                };
+            }
+            catch (Exception ex)
             {
-                MonedaIn = monedaIn.ToUpper(),
-                MonedaOut = monedaOut.ToUpper(),
-                TipoCambio = tipoCambio,
-                // Como este endpoint de UniRate no devuelve un "timestamp", registramos la hora del sistema
-                FechaActualizacion = DateTime.Now
-            };
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Error al obtener el tipo de cambio: {ex.Message}", ex);
-        }
+                // Si ocurre un error, .NET es inteligente y NO guardará el error en caché
+                throw new InvalidOperationException($"Error al obtener el tipo de cambio: {ex.Message}", ex);
+            }
+        });
     }
 
     public async Task<CambioMonedaResponseDTO> ConvertirMonedaAsync(string monedaIn, string monedaOut, decimal monto)
     {
+        // Como este método usa ObtenerTipoCambioAsync, ¡automáticamente hereda el caché! No hay que tocar nada aquí.
         var tipoCambio = await ObtenerTipoCambioAsync(monedaIn, monedaOut);
         var montoConvertido = monto * tipoCambio.TipoCambio;
 
@@ -90,7 +102,6 @@ public class DivisasService : IDivisasService
         return dateTime;
     }
 
-    // Clase interna renombrada y adaptada a la estructura de UniRate
     private class UniRateConvertResponse
     {
         [JsonPropertyName("amount")]
@@ -106,53 +117,59 @@ public class DivisasService : IDivisasService
         public decimal Result { get; set; }
     }
 
-    //Obtener los codigos de las monedas para los selectores 
     public async Task<Dictionary<string, string>> ObtenerMonedasDisponiblesAsync()
     {
-        try
+        // Llave fija porque la lista es global
+        string cacheKey = "ListaMonedasDisponibles";
+
+        return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            var apiKey = _configuration["UnirateApi:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
-                throw new InvalidOperationException("API key de UniRate no está configurada.");
+            // Las monedas no cambian seguido. Las guardamos por 12 horas.
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(12);
 
-            var client = _httpClientFactory.CreateClient();
-            var url = $"{_apiBaseUrl}currencies?api_key={apiKey}";
-
-            var response = await client.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException($"Error al consultar la API de divisas: {response.StatusCode}. URL solicitada: {url}");
-
-            var content = await response.Content.ReadAsStringAsync();
-
-            // 1. Deserializamos usando la estructura real de UniRate (Objeto con una lista interna)
-            var jsonResponse = JsonSerializer.Deserialize<UniRateCurrenciesResponse>(content, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
+                var apiKey = _configuration["UnirateApi:ApiKey"];
+                if (string.IsNullOrEmpty(apiKey))
+                    throw new InvalidOperationException("API key de UniRate no está configurada.");
 
-            // 2. Convertimos la lista de strings a un Dictionary<string, string> para respetar el contrato de la interfaz (IDivisasService)
-            var resultado = new Dictionary<string, string>();
+                var client = _httpClientFactory.CreateClient();
+                var url = $"{_apiBaseUrl}currencies?api_key={apiKey}";
 
-            if (jsonResponse?.Currencies != null)
-            {
-                foreach (var codigo in jsonResponse.Currencies)
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Error al consultar la API de divisas: {response.StatusCode}. URL solicitada: {url}");
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                var jsonResponse = JsonSerializer.Deserialize<UniRateCurrenciesResponse>(content, new JsonSerializerOptions
                 {
-                    if (!string.IsNullOrWhiteSpace(codigo))
+                    PropertyNameCaseInsensitive = true
+                });
+
+                var resultado = new Dictionary<string, string>();
+
+                if (jsonResponse?.Currencies != null)
+                {
+                    foreach (var codigo in jsonResponse.Currencies)
                     {
-                        // Como la API solo da las siglas (USD, PEN), las usamos tanto de clave como de valor
-                        resultado[codigo.ToUpper()] = codigo.ToUpper();
+                        if (!string.IsNullOrWhiteSpace(codigo))
+                        {
+                            resultado[codigo.ToUpper()] = codigo.ToUpper();
+                        }
                     }
                 }
-            }
 
-            return resultado;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Error al obtener u organizar la lista de monedas: {ex.Message}", ex);
-        }
+                return resultado;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al obtener u organizar la lista de monedas: {ex.Message}", ex);
+            }
+        });
     }
+
     private class UniRateCurrenciesResponse
     {
         [JsonPropertyName("currencies")]
