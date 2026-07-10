@@ -32,7 +32,8 @@ public class ClientesService : IClientesService
             nombre = createDto.Nombre,
             email = createDto.Email,
             pass_hash = createDto.PassHash,
-            calificacion_vendedor = 0.00m
+            calificacion_vendedor = 0.00m,
+            cant_calificaciones = 0
         };
 
         cliente.id = await _clientesRepository.AddAsync(cliente);
@@ -53,6 +54,8 @@ public class ClientesService : IClientesService
             existing.pass_hash = updateDto.PassHash;
         if (updateDto.CalificacionVendedor is not null)
             existing.calificacion_vendedor = updateDto.CalificacionVendedor.Value;
+        if (updateDto.CantCalificaciones is not null)
+            existing.cant_calificaciones = updateDto.CantCalificaciones.Value;
 
         return await _clientesRepository.UpdateAsync(existing);
     }
@@ -60,6 +63,28 @@ public class ClientesService : IClientesService
     public async Task<bool> DeleteAsync(int id)
     {
         return await _clientesRepository.DeleteAsync(id);
+    }
+
+    public async Task<bool> CalificarUsuarioAsync(int id, decimal calificacionRecibida)
+    {
+        // 1. Buscamos el cliente (¡Ojo! Asegúrate que el repositorio devuelva una instancia editable, no un clon desconectado)
+        var cliente = await _clientesRepository.GetByIdAsync(id);
+        if (cliente == null) return false;
+
+        // 2. Definimos las variables de tu ecuación matemática
+        int m = cliente.cant_calificaciones + 1; // Nueva cantidad de calificaciones
+        decimal n = cliente.calificacion_vendedor; // Promedio actual
+        decimal x = calificacionRecibida;          // Calificación entrante
+
+        // 3. Resolvemos la operación matemática asignando el nuevo promedio
+        decimal nuevoPromedio = ((m - 1) * n + x) / m;
+
+        // 4. Actualizamos el registro de la entidad
+        cliente.cant_calificaciones = m;
+        cliente.calificacion_vendedor = Math.Round(nuevoPromedio, 2); // Redondeo estándar a 2 decimales para DB
+
+        // 5. Persistimos los cambios a través del repositorio
+        return await _clientesRepository.UpdateAsync(cliente);
     }
 
     private static ClienteResponseDTO MapToDTO(Cliente cliente)
@@ -70,6 +95,7 @@ public class ClientesService : IClientesService
             Nombre = cliente.nombre,
             Email = cliente.email,
             CalificacionVendedor = cliente.calificacion_vendedor,
+            CantCalificaciones = cliente.cant_calificaciones,
             FechaRegistro = cliente.fecha_registro
         };
     }

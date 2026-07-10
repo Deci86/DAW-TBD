@@ -57,4 +57,23 @@ public class ClientesController : ControllerBase
             return NotFound(new { mensaje = $"Cliente con ID {id} no encontrado." });
         return NoContent();
     }
+
+    // POST api/clientes/{id}/calificar
+    [HttpPost("{id}/calificar")]
+    public async Task<IActionResult> CalificarCliente(int id, [FromBody] CalificarClienteDTO dto)
+    {
+        if (dto.Calificacion < 0 || dto.Calificacion > 5) // Validación básica opcional (Rango 0 a 5 estrellas)
+        {
+            return BadRequest(new { mensaje = "La calificación debe estar contenida entre 0 y 5." });
+        }
+
+        var resultado = await _clientesService.CalificarUsuarioAsync(id, dto.Calificacion);
+
+        if (!resultado)
+        {
+            return NotFound(new { mensaje = $"No se pudo procesar la calificación. Cliente con ID {id} no encontrado." });
+        }
+
+        return Ok(new { mensaje = "Calificación registrada y promedio actualizado con éxito." });
+    }
 }

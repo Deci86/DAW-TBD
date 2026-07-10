@@ -7,5 +7,6 @@ public class Cliente
     public string email { get; set; } = string.Empty;
     public string pass_hash { get; set; } = string.Empty;
     public decimal calificacion_vendedor { get; set; }
+    public int cant_calificaciones { get; set; }
     public DateTime fecha_registro { get; set; }
 }

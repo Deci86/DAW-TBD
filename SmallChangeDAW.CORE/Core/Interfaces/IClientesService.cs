@@ -9,4 +9,5 @@ public interface IClientesService
     Task<ClienteResponseDTO> AddAsync(CreateClienteDTO createDto);
     Task<bool> UpdateAsync(int id, UpdateClienteDTO updateDto);
     Task<bool> DeleteAsync(int id);
+    Task<bool> CalificarUsuarioAsync(int id, decimal calificacionRecibida);
 }

@@ -25,7 +25,6 @@ public class ClientesRepository : IClientesRepository
     public async Task<Cliente?> GetByIdAsync(int id)
     {
         return await _context.Clientes
-            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.id == id);
     }
 
